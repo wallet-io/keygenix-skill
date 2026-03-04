@@ -174,17 +174,20 @@ const commands = {
     const { publicKey: preparedPubKey } = await call('POST', orgUrl('/keys/prepare_import'), {});
     // Step 2: encrypt key material with TEE public key (ECIES)
     const enc = new SecureEncryption();
+    // API expects {"mnemonic":"..."} for mnemonic, {"key":"..."} for private/secret
     const payload = keyType === 'mnemonic'
       ? JSON.stringify({ mnemonic: keyMaterial })
-      : JSON.stringify({ privateKey: keyMaterial, curve: 'secp256k1' });
+      : JSON.stringify({ key: keyMaterial });
     const encryptedImportingKey = enc.encrypt(payload, preparedPubKey);
     // Step 3: authPubKey
     const authPrivKey = process.env.KEYGENIX_AUTH_PRIV_KEY;
     if (!authPrivKey) throw new Error('KEYGENIX_AUTH_PRIV_KEY not set');
     const authPubKey = bytesToHex(secp256k1.getPublicKey(hexToBytes(authPrivKey)));
     // Step 4: submit
+    const importBody = { keyType, encryptedImportingKey, authPubKey, preparedPubKey };
+    if (keyType !== 'mnemonic') importBody.curve = 'secp256k1'; // required for private/secret
     return call('POST', orgUrl('/keys/import'), {
-      keyType, encryptedImportingKey, authPubKey, preparedPubKey,
+      ...importBody,
       createAddresses: keyType === 'mnemonic' ? [
         { deriving: { curve: 'secp256k1', path: "m/44'/60'/0'/0/0", deriveType: 'bip32' }, addressType: 'EVM' },
         { deriving: { curve: 'ed25519', path: "m/44'/501'/0'/0'", deriveType: 'ed25519-hd-key' }, addressType: 'SOL' },
