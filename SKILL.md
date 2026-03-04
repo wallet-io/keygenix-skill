@@ -32,7 +32,7 @@ Configure in Claude Desktop / Cursor / Windsurf:
   "mcpServers": {
     "keygenix": {
       "command": "node",
-      "args": ["node_modules/keygenix-mcp/dist/index.js"],
+      "args": ["/absolute/path/to/keygenix-mcp/dist/index.js"],
       "env": {
         "KEYGENIX_API_PRIV_KEY": "...",
         "KEYGENIX_AUTH_PRIV_KEY": "...",
@@ -43,6 +43,8 @@ Configure in Claude Desktop / Cursor / Windsurf:
   }
 }
 ```
+> Replace `/absolute/path/to/keygenix-mcp` with the actual path where you installed it.
+> Once published to npm: use `"command": "npx", "args": ["keygenix-mcp"]` instead.
 
 ---
 

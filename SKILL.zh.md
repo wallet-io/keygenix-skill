@@ -32,7 +32,7 @@ npm install github:onezerotrace/keygenix-mcp
   "mcpServers": {
     "keygenix": {
       "command": "node",
-      "args": ["node_modules/keygenix-mcp/dist/index.js"],
+      "args": ["/absolute/path/to/keygenix-mcp/dist/index.js"],
       "env": {
         "KEYGENIX_API_PRIV_KEY": "...",
         "KEYGENIX_AUTH_PRIV_KEY": "...",
@@ -43,6 +43,8 @@ npm install github:onezerotrace/keygenix-mcp
   }
 }
 ```
+> 将 `/absolute/path/to/keygenix-mcp` 替换为实际安装路径。
+> npm 发布后可改为：`"command": "npx", "args": ["keygenix-mcp"]`
 
 ---
 
