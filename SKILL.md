@@ -51,8 +51,8 @@ Configure in Claude Desktop / Cursor / Windsurf:
 For scripting or debugging without an MCP client, use the CLI in the MCP server repo:
 
 ```bash
-git clone https://github.com/onezerotrace/keygenix-mcp
-cd keygenix-mcp/cli
+git clone https://github.com/onezerotrace/keygenix-skill
+cd keygenix-skill/cli
 npm install
 cp .env.example .env   # fill in your keys
 
