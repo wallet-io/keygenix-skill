@@ -22,6 +22,15 @@
  *   KEYGENIX_WALLET_CODE   — Wallet code
  */
 
+// Auto-load .env from the same directory as this script
+const _envPath = require('path').join(__dirname, '.env');
+if (require('fs').existsSync(_envPath)) {
+  require('fs').readFileSync(_envPath, 'utf8').split('\n').forEach(line => {
+    const m = line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*)$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].trim().replace(/^['"]|['"]$/g, '');
+  });
+}
+
 const jsonStableStringify = require("json-stable-stringify");
 const axios = require("axios");
 const { secp256k1 } = require('@noble/curves/secp256k1');
