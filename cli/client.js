@@ -11,6 +11,7 @@
  *   create-address <keyCode> <addressType> <path> <curve> <deriveType>
  *   sign-tx <keyCode> <txHex> <chainId> <path>   — Sign an EVM transaction
  *   sign-msg <keyCode> <messageHex> <path>        — Sign a message
+ *   import-key <keyType> <keyMaterial>             — Import mnemonic or private key into TEE
  *   sign-tx-address <keyCode> <address> <txHex>   — Sign tx via address (EVM)
  *   sign-msg-address <keyCode> <address> <msgHex> — Sign message via address
  *
@@ -23,9 +24,9 @@
 
 const jsonStableStringify = require("json-stable-stringify");
 const axios = require("axios");
-const { secp256k1 } = require('@noble/curves/secp256k1.js');
-const { sha256 } = require('@noble/hashes/sha2.js');
-const { bytesToHex, hexToBytes } = require('@noble/hashes/utils.js');
+const { secp256k1 } = require('@noble/curves/secp256k1');
+const { sha256 } = require('@noble/hashes/sha256');
+const { bytesToHex, hexToBytes } = require('@noble/hashes/utils');
 const SecureEncryption = require('./secure_encryption');
 
 const BASE_URL = 'https://api.keygenix.pro/v1/api';
@@ -155,6 +156,30 @@ const commands = {
     const authSignature = authSign(authPrivKey, txBundle, timestamp);
     return call('POST', orgUrl(`/keys/${keyCode}/addresses/${address}/sign_transaction`), {
       authSignature, timestamp, txBundle,
+    });
+  },
+
+  async 'import-key'([keyType = 'mnemonic', keyMaterial]) {
+    if (!keyMaterial) throw new Error('keyMaterial required (mnemonic phrase or hex private key)');
+    // Step 1: prepare import — get TEE public key
+    const { publicKey: preparedPubKey } = await call('POST', orgUrl('/keys/prepare_import'), {});
+    // Step 2: encrypt key material with TEE public key (ECIES)
+    const enc = new SecureEncryption();
+    const payload = keyType === 'mnemonic'
+      ? JSON.stringify({ mnemonic: keyMaterial })
+      : JSON.stringify({ privateKey: keyMaterial, curve: 'secp256k1' });
+    const encryptedImportingKey = enc.encrypt(payload, preparedPubKey);
+    // Step 3: authPubKey
+    const authPrivKey = process.env.KEYGENIX_AUTH_PRIV_KEY;
+    if (!authPrivKey) throw new Error('KEYGENIX_AUTH_PRIV_KEY not set');
+    const authPubKey = bytesToHex(secp256k1.getPublicKey(hexToBytes(authPrivKey)));
+    // Step 4: submit
+    return call('POST', orgUrl('/keys/import'), {
+      keyType, encryptedImportingKey, authPubKey, preparedPubKey,
+      createAddresses: keyType === 'mnemonic' ? [
+        { deriving: { curve: 'secp256k1', path: "m/44'/60'/0'/0/0", deriveType: 'bip32' }, addressType: 'EVM' },
+        { deriving: { curve: 'ed25519', path: "m/44'/501'/0'/0'", deriveType: 'ed25519-hd-key' }, addressType: 'SOL' },
+      ] : [],
     });
   },
 

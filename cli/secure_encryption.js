@@ -1,13 +1,14 @@
 /**
  * SecureEncryption — ECIES over secp256k1 + AES-256-GCM + HKDF-SHA256
  * Compatible with Keygenix TEE encryption protocol (v1)
+ *
+ * Uses Node.js built-in crypto throughout (no ESM-only dependencies).
  */
 const crypto = require("crypto");
-const { secp256k1 } = require('@noble/curves/secp256k1.js');
-const { hkdf } = require('@noble/hashes/hkdf.js');
-const { sha256 } = require('@noble/hashes/sha2.js');
-const { bytesToHex, hexToBytes } = require('@noble/hashes/utils.js');
-const { gcm } = require('@noble/ciphers/aes.js');
+const { secp256k1 } = require('@noble/curves/secp256k1');
+const { hkdf } = require('@noble/hashes/hkdf');
+const { sha256 } = require('@noble/hashes/sha256');
+const { bytesToHex, hexToBytes } = require('@noble/hashes/utils');
 
 class SecureEncryption {
   constructor() {
@@ -15,16 +16,18 @@ class SecureEncryption {
   }
 
   encrypt(plaintext, publicKeyHex, ephemeralPrivateKeyHex = undefined) {
-    if (typeof plaintext !== 'string' || !plaintext.trim()) throw new Error('Plaintext must be non-empty string');
-    if (typeof publicKeyHex !== 'string' || !/^[0-9a-f]+$/i.test(publicKeyHex)) throw new Error('Invalid public key format');
+    if (typeof plaintext !== 'string' || plaintext.length === 0)
+      throw new Error('Plaintext must be non-empty string');
+    if (typeof publicKeyHex !== 'string' || !/^[0-9a-f]+$/i.test(publicKeyHex))
+      throw new Error('Invalid public key format');
 
-    let ephemeralPrivKeyBytes = ephemeralPrivateKeyHex
+    const ephemeralPrivKeyBytes = ephemeralPrivateKeyHex
       ? hexToBytes(ephemeralPrivateKeyHex)
       : secp256k1.utils.randomSecretKey();
 
     const secret = secp256k1.getSharedSecret(ephemeralPrivKeyBytes, hexToBytes(publicKeyHex)).slice(1);
     const salt = crypto.randomBytes(32);
-    const key = hkdf(sha256, secret, salt, 'encryption-key', 32);
+    const key = Buffer.from(hkdf(sha256, secret, salt, 'encryption-key', 32));
     const iv = crypto.randomBytes(12);
 
     const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
@@ -48,16 +51,18 @@ class SecureEncryption {
     for (const field of ['epk', 'salt', 'iv', 'tag', 'data']) {
       if (!data[field]) throw new Error(`Missing field: ${field}`);
     }
+
     const secret = secp256k1.getSharedSecret(hexToBytes(privateKeyHex), hexToBytes(data.epk)).slice(1);
-    const key = hkdf(sha256, secret, hexToBytes(data.salt), 'encryption-key', 32);
-    const iv = hexToBytes(data.iv);
-    const tag = hexToBytes(data.tag);
-    const ciphertext = hexToBytes(data.data);
-    const combined = new Uint8Array(ciphertext.length + tag.length);
-    combined.set(ciphertext);
-    combined.set(tag, ciphertext.length);
-    const bytes = gcm(key, iv).decrypt(combined);
-    return new TextDecoder().decode(bytes);
+    const key = Buffer.from(hkdf(sha256, secret, hexToBytes(data.salt), 'encryption-key', 32));
+    const iv = Buffer.from(data.iv, 'hex');
+    const tag = Buffer.from(data.tag, 'hex');
+    const ciphertext = Buffer.from(data.data, 'hex');
+
+    const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+    decipher.setAuthTag(tag);
+    let decrypted = decipher.update(ciphertext, undefined, 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
   }
 }
 
