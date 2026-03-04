@@ -4,55 +4,64 @@
 
 ---
 
-## Preferred: Use via MCP Server
+## Using via MCP Server (recommended)
 
-If `keygenix-mcp` is configured in your MCP client, use MCP tools directly:
+If `keygenix-mcp` is configured in your MCP client, use these tools directly:
 
-| MCP Tool | What it does |
-|----------|-------------|
-| `keygen` | Generate a new secp256k1 keypair locally |
+| Tool | Description |
+|------|-------------|
+| `keygen` | Generate a new secp256k1 keypair locally (no network) |
 | `list_keys` | List all keys in the wallet |
 | `get_key(keyCode)` | Get key details |
 | `create_key(keyType, chains)` | Create a new key in TEE |
+| `import_key(keyType, mnemonic/privateKey, chains)` | Import existing key into TEE (ECIES encrypted) |
 | `list_addresses(keyCode)` | List derived addresses |
 | `create_address(keyCode, addressType)` | Derive a new chain address |
-| `sign_transaction(keyCode/address, tx, chain)` | Sign a transaction |
-| `sign_message(keyCode/address, message)` | Sign a message |
+| `sign_transaction(keyCode, tx, chain)` | Sign a transaction |
+| `sign_message(keyCode, message, chain)` | Sign a message |
 
----
-
-## Fallback: Use CLI directly (no MCP server)
-
-Requires env vars set:
-```
-KEYGENIX_API_PRIV_KEY, KEYGENIX_AUTH_PRIV_KEY, KEYGENIX_ORG_CODE, KEYGENIX_WALLET_CODE
-```
+### MCP Server setup
 
 ```bash
-# Generate keypair (local)
-node /path/to/skills/keygenix/client.js keygen
+npm install github:onezerotrace/keygenix-mcp
+```
 
-# List keys
-node client.js list-keys
-
-# Create mnemonic key (EVM + SOL addresses)
-node client.js create-key mnemonic <authPubKey>
-
-# Sign EVM transaction
-node client.js sign-tx <keyCode> <txHex> <chainId> <path>
-
-# Sign message
-node client.js sign-msg <keyCode> <messageHex>
+Configure in Claude Desktop / Cursor / Windsurf:
+```json
+{
+  "mcpServers": {
+    "keygenix": {
+      "command": "node",
+      "args": ["node_modules/keygenix-mcp/dist/index.js"],
+      "env": {
+        "KEYGENIX_API_PRIV_KEY": "...",
+        "KEYGENIX_AUTH_PRIV_KEY": "...",
+        "KEYGENIX_ORG_CODE": "...",
+        "KEYGENIX_WALLET_CODE": "..."
+      }
+    }
+  }
+}
 ```
 
 ---
 
-## Setup
+## Without MCP (CLI)
 
-1. Register at [keygenix.pro](https://keygenix.pro) → get `orgCode` and `walletCode`
-2. Generate two keypairs: one for API Auth, one for AuthKey
-3. Register both public keys in the dashboard
-4. Set env vars (see `.env.example`)
+For scripting or debugging without an MCP client, use the CLI in the MCP server repo:
+
+```bash
+git clone https://github.com/onezerotrace/keygenix-mcp
+cd keygenix-mcp/cli
+npm install
+cp .env.example .env   # fill in your keys
+
+node client.js keygen                          # generate keypair
+node client.js list-keys                       # list keys
+node client.js create-key mnemonic <authPubKey>
+node client.js sign-tx <keyCode> <txHex> <chainId>
+node client.js sign-msg <keyCode> <messageHex>
+```
 
 ---
 
@@ -62,10 +71,9 @@ EVM · SOL · BTC · LTC · DOGE · ZEC · TRX · XRP · SUI · TON · ADA · AP
 
 ---
 
-## MCP Server Install
+## Setup
 
-```bash
-npx keygenix-mcp
-```
-
-See [github.com/keygenix/keygenix-mcp](https://github.com/keygenix/keygenix-mcp) for full setup.
+1. Register at [keygenix.pro](https://keygenix.pro) → get `orgCode` and `walletCode`
+2. Generate two keypairs: API Auth Key + AuthKey (`node client.js keygen` twice)
+3. Register both public keys in the dashboard
+4. Set env vars
