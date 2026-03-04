@@ -24,7 +24,7 @@ node client.js keygen
 node client.js list-keys
 
 # Create a new mnemonic key (EVM + SOL addresses by default)
-node client.js create-key mnemonic <authPubKey>
+node client.js create-key mnemonic
 
 # Get key details
 node client.js get-key <keyCode>

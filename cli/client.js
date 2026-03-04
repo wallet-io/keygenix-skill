@@ -5,7 +5,7 @@
  * Commands:
  *   keygen                          — Generate a new secp256k1 keypair
  *   list-keys                       — List keys in a wallet
- *   create-key <keyType>            — Create a key (mnemonic|private|secret)
+ *   create-key [keyType]            — Create a key (mnemonic|private|secret), uses KEYGENIX_AUTH_PRIV_KEY
  *   get-key <keyCode>               — Get key details
  *   list-addresses <keyCode>        — List addresses for a key
  *   create-address <keyCode> <addressType> <path> <curve> <deriveType>
@@ -94,8 +94,10 @@ const commands = {
     return call('GET', orgUrl(`/keys?page=${page}&size=${size}`));
   },
 
-  async 'create-key'([keyType = 'mnemonic', authPubKey]) {
-    if (!authPubKey) throw new Error('authPubKey required');
+  async 'create-key'([keyType = 'mnemonic']) {
+    const authPrivKey = process.env.KEYGENIX_AUTH_PRIV_KEY;
+    if (!authPrivKey) throw new Error('KEYGENIX_AUTH_PRIV_KEY not set');
+    const authPubKey = bytesToHex(secp256k1.getPublicKey(hexToBytes(authPrivKey)));
     const addresses = keyType === 'mnemonic' ? [
       { deriving: { curve: 'secp256k1', path: "m/44'/60'/0'/0/0", deriveType: 'bip32' }, addressType: 'EVM' },
       { deriving: { curve: 'ed25519', path: "m/44'/501'/0'/0'", deriveType: 'ed25519-hd-key' }, addressType: 'SOL' },
