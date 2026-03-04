@@ -23,7 +23,7 @@
 ### MCP Server 安装
 
 ```bash
-npm install github:onezerotrace/keygenix-mcp
+npm install github:wallet-io/keygenix-mcp
 ```
 
 在 Claude Desktop / Cursor / Windsurf 中配置：
@@ -53,7 +53,7 @@ npm install github:onezerotrace/keygenix-mcp
 如果没有 MCP 客户端，使用本仓库内附的 CLI：
 
 ```bash
-git clone https://github.com/onezerotrace/keygenix-skill
+git clone https://github.com/wallet-io/keygenix-skill
 cd keygenix-skill/cli
 npm install
 cp .env.example .env   # 填入你的密钥

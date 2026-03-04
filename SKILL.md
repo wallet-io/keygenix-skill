@@ -23,7 +23,7 @@ If `keygenix-mcp` is configured in your MCP client, use these tools directly:
 ### MCP Server setup
 
 ```bash
-npm install github:onezerotrace/keygenix-mcp
+npm install github:wallet-io/keygenix-mcp
 ```
 
 Configure in Claude Desktop / Cursor / Windsurf:
@@ -53,7 +53,7 @@ Configure in Claude Desktop / Cursor / Windsurf:
 For scripting or debugging without an MCP client, use the CLI included in this repo:
 
 ```bash
-git clone https://github.com/onezerotrace/keygenix-skill
+git clone https://github.com/wallet-io/keygenix-skill
 cd keygenix-skill/cli
 npm install
 cp .env.example .env   # fill in your keys

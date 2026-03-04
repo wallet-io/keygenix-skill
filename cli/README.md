@@ -7,7 +7,7 @@ Use this when you want to integrate Keygenix directly into scripts or test the A
 ## Setup
 
 ```bash
-git clone https://github.com/onezerotrace/keygenix-skill
+git clone https://github.com/wallet-io/keygenix-skill
 cd keygenix-skill/cli
 npm install
 cp .env.example .env

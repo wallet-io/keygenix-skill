@@ -102,7 +102,7 @@ AuthKey       ──── authorizes   ──► sign / export ops
 
 **Option A — MCP Server (recommended for AI agents):**
 ```bash
-npm install github:onezerotrace/keygenix-mcp
+npm install github:wallet-io/keygenix-mcp
 # Configure in your AI client — see keygenix-mcp README
 ```
 

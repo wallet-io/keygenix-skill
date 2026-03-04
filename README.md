@@ -24,7 +24,7 @@
 The MCP Server wraps the full Keygenix API as AI-callable tools.
 
 ```bash
-npm install github:onezerotrace/keygenix-mcp
+npm install github:wallet-io/keygenix-mcp
 ```
 
 Configure in Claude Desktop (`~/Library/Application Support/Claude/claude_desktop_config.json`):
@@ -48,14 +48,14 @@ Configure in Claude Desktop (`~/Library/Application Support/Claude/claude_deskto
 
 > Once published to npm: use `"command": "npx", "args": ["keygenix-mcp"]`
 
-MCP Server repo: [onezerotrace/keygenix-mcp](https://github.com/onezerotrace/keygenix-mcp)
+MCP Server repo: [wallet-io/keygenix-mcp](https://github.com/wallet-io/keygenix-mcp)
 
 ### Option B — CLI (scripting / debugging)
 
 For direct API access without an AI client:
 
 ```bash
-git clone https://github.com/onezerotrace/keygenix-skill
+git clone https://github.com/wallet-io/keygenix-skill
 cd keygenix-skill/cli
 npm install
 cp .env.example .env   # fill in your credentials
@@ -134,5 +134,5 @@ Signed transaction returned
 
 - Website: [keygenix.pro](https://keygenix.pro)
 - API Docs: [keygenix.pro/docs.html](https://keygenix.pro/docs.html)
-- MCP Server: [onezerotrace/keygenix-mcp](https://github.com/onezerotrace/keygenix-mcp)
-- Issues: [github.com/onezerotrace/keygenix-skill/issues](https://github.com/onezerotrace/keygenix-skill/issues)
+- MCP Server: [wallet-io/keygenix-mcp](https://github.com/wallet-io/keygenix-mcp)
+- Issues: [github.com/wallet-io/keygenix-skill/issues](https://github.com/wallet-io/keygenix-skill/issues)
