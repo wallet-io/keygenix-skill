@@ -133,29 +133,27 @@ const commands = {
     });
   },
 
-  async 'sign-tx'([keyCode, txHex, chainId = '1', path = "m/44'/60'/0'/0/0"]) {
+  async 'sign-tx'([keyCode, txHex, chainId = '1', path]) {
     if (!keyCode || !txHex) throw new Error('keyCode and txHex required');
     const authPrivKey = process.env.KEYGENIX_AUTH_PRIV_KEY;
     if (!authPrivKey) throw new Error('KEYGENIX_AUTH_PRIV_KEY not set');
     const txBundle = JSON.stringify({ tx: txHex, category: 'EVM', network: { chainId: parseInt(chainId) } });
     const timestamp = Math.floor(Date.now() / 1000);
     const authSignature = authSign(authPrivKey, txBundle, timestamp);
-    return call('POST', orgUrl(`/keys/${keyCode}/sign_transaction`), {
-      authSignature, timestamp, txBundle,
-      deriving: { curve: 'secp256k1', path, deriveType: 'bip32' },
-    });
+    const body = { authSignature, timestamp, txBundle };
+    if (path) body.deriving = { curve: 'secp256k1', path, deriveType: 'bip32' };
+    return call('POST', orgUrl(`/keys/${keyCode}/sign_transaction`), body);
   },
 
-  async 'sign-msg'([keyCode, messageHex, path = "m/44'/60'/0'/0/0"]) {
+  async 'sign-msg'([keyCode, messageHex, path]) {
     if (!keyCode || !messageHex) throw new Error('keyCode and messageHex required');
     const authPrivKey = process.env.KEYGENIX_AUTH_PRIV_KEY;
     if (!authPrivKey) throw new Error('KEYGENIX_AUTH_PRIV_KEY not set');
     const timestamp = Math.floor(Date.now() / 1000);
     const authSignature = authSign(authPrivKey, messageHex, timestamp);
-    return call('POST', orgUrl(`/keys/${keyCode}/sign_message`), {
-      authSignature, timestamp, message: messageHex,
-      deriving: { curve: 'secp256k1', path, deriveType: 'bip32' },
-    });
+    const body = { authSignature, timestamp, message: messageHex };
+    if (path) body.deriving = { curve: 'secp256k1', path, deriveType: 'bip32' };
+    return call('POST', orgUrl(`/keys/${keyCode}/sign_message`), body);
   },
 
   async 'sign-tx-address'([keyCode, address, txHex, chainId = '1']) {
